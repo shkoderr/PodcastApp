@@ -16,6 +16,26 @@ export class Question {
       .then(addToLocalStorage) //добавим наш вопрос в local storage
       .then(Question.renderList) //выводим вопросы в HTML
   }
+
+  //Получаем вопросы из БД по токену: 
+  static fetch(token) {
+    if (!token) {
+      return Promise.resolve(`<p class="error">У вас нет токена</p>`)
+    }
+    return fetch(`https://podcast-app-f248d-default-rtdb.europe-west1.firebasedatabase.app/questions.json?auth=${token}`)
+      .then(response => response.json())
+      .then(response => {
+        if (response && response.error) {
+          return `<p class="error">${response.error}</p>`
+        }
+
+        return response ? Object.keys(response).map(key => ({
+          ...response[key],
+          id: key
+        })) : []
+      })
+  }
+
   //Создадим функцию для вывода наших вопросов в HTML
   static renderList() {
     const questions = getQuestionsFromLocalStorage()
@@ -29,6 +49,12 @@ export class Question {
     const list = document.getElementById('list')
 
     list.innerHTML = html //заменяем содержимое нашими вопросами
+  }
+
+  static listToHTML (questions) {
+    return questions.length
+    ? `<ol>${questions.map(q => `<li>${q.text}</li>`).join('')}</ol>`
+    : `<p>Вопросов пока нет</p>`
   }
 }
 

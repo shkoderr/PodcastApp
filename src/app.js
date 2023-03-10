@@ -1,7 +1,9 @@
 //============Импортируем стили и функции==========
-import { Question } from "./question";
-import { isValid } from './utils'
+import { Question } from "./question"
+import { createModal, isValid } from './utils'
+import { getAuthForm,authWithEmailAndPassword } from "./auth"
 import './styles.css'
+
 
 //==============Объявление переменных==============
 const form = document.getElementById('form')
@@ -9,6 +11,7 @@ const form = document.getElementById('form')
 const input = form.querySelector('#question-input')
 const submitBtn = form.querySelector('#submit')
 const modalBtn = document.getElementById('modal-btn') 
+
 
 //=============Добавляем события==================
 window.addEventListener('load', Question.renderList)
@@ -21,6 +24,7 @@ input.addEventListener('input', () => {
 modalBtn.addEventListener('click', openModal)
 
 
+//==============Функции==================
 function submitFormHandler(event) {
   event.preventDefault()
 
@@ -41,6 +45,36 @@ function submitFormHandler(event) {
   }
 }
 
+
+//Создаём модальное окно
 function openModal() {
-  
+  createModal('Авторизация', getAuthForm())
+  document
+  .getElementById('auth-form')
+  .addEventListener('submit', authFormHandler, {once: true})
+}
+
+function authFormHandler(event) {
+  event.preventDefault() //отменяем перезагрузку страницы
+  //Получаем значения введённых данных и кнопку:
+  const btn = event.target.querySelector('button') 
+  const email = event.target.querySelector('#email').value
+  const password = event.target.querySelector('#password').value
+
+  btn.disabled = true
+  authWithEmailAndPassword(email, password)
+    .then(token => {
+      return Question.fetch(token)
+    })
+    .then(renderModalAfterAuth)
+    .then(() => btn.disabled = false)
+}
+
+//Метод для визуализации модального окна после авториазации
+function renderModalAfterAuth(content) {
+  if (typeof content === 'string') {
+    createModal('Ошибка!', content)
+  } else {
+    createModal('Вопросы:', Question.listToHTML(content))
+  }
 }
