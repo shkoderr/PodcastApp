@@ -3,13 +3,14 @@ export class Question {
     //Отправим наш вопрос на сервер в Firebase
     return fetch('https://podcast-app-f248d-default-rtdb.europe-west1.firebasedatabase.app/questions.json', {
       method: 'POST', //указываем метод POST - добавление в БД
-      body: JSON.stringify(question),//объект, который мы добавляем
-      headers: { //оптравляем доп. инф-ию о нашем post-запросе
-        'Content-Type': 'application/json'
-      }
+      body: JSON.stringify(question), //объект, который мы добавляем
+      headers: {
+        //оптравляем доп. инф-ию о нашем post-запросе
+        'Content-Type': 'application/json',
+      },
     })
-      .then(response => response.json())
-      .then(response => {
+      .then((response) => response.json())
+      .then((response) => {
         question.id = response.name
         return question
       })
@@ -17,22 +18,26 @@ export class Question {
       .then(Question.renderList) //выводим вопросы в HTML
   }
 
-  //Получаем вопросы из БД по токену: 
+  //Получаем вопросы из БД по токену:
   static fetch(token) {
     if (!token) {
       return Promise.resolve(`<p class="error">У вас нет токена</p>`)
     }
-    return fetch(`https://podcast-app-f248d-default-rtdb.europe-west1.firebasedatabase.app/questions.json?auth=${token}`)
-      .then(response => response.json())
-      .then(response => {
+    return fetch(
+      `https://podcast-app-f248d-default-rtdb.europe-west1.firebasedatabase.app/questions.json?auth=${token}`
+    )
+      .then((response) => response.json())
+      .then((response) => {
         if (response && response.error) {
           return `<p class="error">${response.error}</p>`
         }
 
-        return response ? Object.keys(response).map(key => ({
-          ...response[key],
-          id: key
-        })) : []
+        return response
+          ? Object.keys(response).map((key) => ({
+              ...response[key],
+              id: key,
+            }))
+          : []
       })
   }
 
@@ -41,9 +46,9 @@ export class Question {
     const questions = getQuestionsFromLocalStorage()
 
     const html = questions.length //если длина массива не ноль, то...
-    ? questions.map(toCard).join('')
-    //..то каждый вопрос рендерим в html и соединяем
-    : `<div class="mui--text-headline">You haven't asked yet.</div>`
+      ? questions.map(toCard).join('')
+      : //..то каждый вопрос рендерим в html и соединяем
+        `<div class="mui--text-headline">Вы ещё не спрашивали.</div>`
     //в противном случае, выводим такое сообщение в html
     //создадим функционал для отображения вопросов в html:
     const list = document.getElementById('list')
@@ -51,10 +56,10 @@ export class Question {
     list.innerHTML = html //заменяем содержимое нашими вопросами
   }
 
-  static listToHTML (questions) {
+  static listToHTML(questions) {
     return questions.length
-    ? `<ol>${questions.map(q => `<li>${q.text}</li>`).join('')}</ol>`
-    : `<p>Вопросов пока нет</p>`
+      ? `<ol>${questions.map((q) => `<li>${q.text}</li>`).join('')}</ol>`
+      : `<p>Вопросов пока нет</p>`
   }
 }
 
